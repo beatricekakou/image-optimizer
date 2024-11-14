@@ -1,5 +1,3 @@
-# image-optimizer
-
 ## Image Optimizer Azure Function
 
 ### Description
