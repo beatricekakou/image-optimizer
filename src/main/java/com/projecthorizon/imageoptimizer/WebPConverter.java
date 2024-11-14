@@ -1,11 +1,14 @@
 package com.projecthorizon.imageoptimizer;
 
+import com.microsoft.azure.functions.ExecutionContext;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Iterator;
+import java.util.Objects;
 
 public class WebPConverter {
 
@@ -30,8 +33,12 @@ public class WebPConverter {
      * @throws IOException          if an error occurs during the command execution.
      * @throws InterruptedException if the process is interrupted.
      */
-    public static byte[] convertToWebP(byte[] inputBytes, String imageName, int quality)
+    public static byte[] convertToWebP(ExecutionContext context, byte[] inputBytes, String imageName, int quality)
             throws IOException, InterruptedException {
+        if (Objects.isNull(inputBytes)) {
+            context.getLogger().severe("Input bytes cannot be null.");
+            throw new IOException("Input bytes cannot be null.");
+        }
         // determine the image format based on the file extension
         String formatName = imageName.substring(imageName.lastIndexOf(DOT) + 1);
         File inputFile = File.createTempFile(INPUT_FILE_PREFIX, DOT + formatName);
@@ -46,7 +53,7 @@ public class WebPConverter {
 
             // build the command
             ProcessBuilder processBuilder;
-            if (GIF_FORMAT.equalsIgnoreCase(formatName) && isAnimatedGif(inputBytes)) {
+            if (GIF_FORMAT.equalsIgnoreCase(formatName) ) {
                 processBuilder = new ProcessBuilder(
                         GIF2WEBP_COMMAND, QUALITY_FLAG, String.valueOf(quality),
                         inputFile.getAbsolutePath(), OUTPUT_FLAG, outputFile.getAbsolutePath());
@@ -61,6 +68,7 @@ public class WebPConverter {
 
             int exitCode = process.waitFor();
             if (exitCode != 0) {
+                context.getLogger().severe(CONVERSION_ERROR_MESSAGE + exitCode);
                 throw new IOException(CONVERSION_ERROR_MESSAGE + exitCode);
             }
 
@@ -73,32 +81,5 @@ public class WebPConverter {
         }
 
         return webpData;
-    }
-
-    /**
-     * Determines if a GIF image is animated.
-     *
-     * @param imageBytes the byte array of the image.
-     * @return true if the GIF is animated, false otherwise.
-     * @throws IOException if an error occurs during image reading.
-     */
-    private static boolean isAnimatedGif(byte[] imageBytes) throws IOException {
-        // create an ImageInputStream from the byte array
-        try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(imageBytes))) {
-            // get all available image readers
-            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-            while (readers.hasNext()) {
-                ImageReader reader = readers.next();
-                try {
-                    reader.setInput(stream);
-                    int numImages = reader.getNumImages(true);
-                    // return true if more than one image is present (animated GIF)
-                    return numImages > 1;
-                } finally {
-                    reader.dispose();
-                }
-            }
-        }
-        return false;
     }
 }

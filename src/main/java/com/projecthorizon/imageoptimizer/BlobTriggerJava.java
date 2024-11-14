@@ -21,7 +21,7 @@ public class BlobTriggerJava {
         context.getLogger().info("image optimization function processed a blob. image name: " + name + "\nsize: " + inputBlob.length + " bytes");
         String fileNameWithoutExt = name.substring(0, name.lastIndexOf("."));
         try {
-            byte[] optimizedImage = WebPConverter.convertToWebP(inputBlob,name, 80);
+            byte[] optimizedImage = WebPConverter.convertToWebP(context,inputBlob,name, 80);
             uploadImage(optimizedImage, fileNameWithoutExt + ".webp", context);
             context.getLogger().info("image optimization function processed successfully. image name: " + name + "\n size input: " + inputBlob.length + " bytes size output: " + optimizedImage.length + " bytes");
 

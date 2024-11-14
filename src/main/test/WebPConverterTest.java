@@ -1,64 +1,83 @@
 import com.projecthorizon.imageoptimizer.WebPConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
-
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import com.microsoft.azure.functions.ExecutionContext;
+import java.util.logging.Logger;
 
-class WebPConverterTest {
+public class WebPConverterTest {
 
-    private static byte[] sampleImageBytes;
+    private static byte[] imageBytes;
+    private static byte[] gifBytes;
 
     @BeforeAll
     static void setup() throws IOException {
         String inputImagePath = "src/main/test/resources/test-image.jpeg";
-        sampleImageBytes = Files.readAllBytes(Paths.get(inputImagePath));
-    }
+        String inputGifPath = "src/main/test/resources/homer.gif";
 
-    @AfterAll
-    static void cleanup() {
-        sampleImageBytes = null;
-    }
-
-    @Test
-    void testConvertToWebP() throws IOException, InterruptedException {
-        int quality = 80;
-        byte[] webpBytes = WebPConverter.convertToWebP(sampleImageBytes, quality);
-
-        assertNotNull(webpBytes, "the webp byte array should not be null");
-        assertTrue(webpBytes.length > 0, "the webp byte array should not be empty");
+        imageBytes = Files.readAllBytes(Paths.get(inputImagePath));
+        gifBytes = Files.readAllBytes(Paths.get(inputGifPath));
     }
 
     @Test
-    void testConvertToWebPLowQuality() throws IOException, InterruptedException {
-        int quality = 0;
-        byte[] webpBytes = WebPConverter.convertToWebP(sampleImageBytes, quality);
+    public void testConvertJpegToWebP() throws IOException, InterruptedException {
+        ExecutionContext context = new TestExecutionContext();
 
-        assertNotNull(webpBytes, "the webpbyte array should not be null for low quality");
-        assertTrue(webpBytes.length > 0, "the webpbyte array should not be empty for low quality");
+        byte[] webpBytes = WebPConverter.convertToWebP(context, imageBytes, "test-image.jpeg", 75);
+
+        assertNotNull(webpBytes, "the converted WebP byte array should not be null.");
+        assertTrue(webpBytes.length > 0, "the converted WebP byte array should not be empty.");
     }
 
     @Test
-    void testConvertToWebPHighQuality() throws IOException, InterruptedException {
-        int quality = 100;
-        byte[] webpBytes = WebPConverter.convertToWebP(sampleImageBytes, quality);
+    public void testConvertGifToWebP() throws IOException, InterruptedException {
+        ExecutionContext context = new TestExecutionContext();
 
-        assertNotNull(webpBytes, "the webp byte array should not be null for high quality");
-        assertTrue(webpBytes.length > 0, "the webp byte array should not be empty for high quality");
+        byte[] webpBytes = WebPConverter.convertToWebP(context, gifBytes, "homer.gif", 75);
+
+        assertNotNull(webpBytes, "the converted WebP byte array should not be null.");
+        assertTrue(webpBytes.length > 0, "the converted WebP byte array should not be empty.");
     }
 
+    @Test
+    public void testConvertNullInput() {
+        ExecutionContext context = new TestExecutionContext();
+
+        assertThrows(IOException.class, () -> {
+            WebPConverter.convertToWebP(context, null, "test-image.jpeg", 75);
+        }, "converting null input bytes should throw an IOException.");
+    }
 
     @Test
-    void testConvertNullInput() {
-        Exception exception = assertThrows(NullPointerException.class, () -> {
-            WebPConverter.convertToWebP(null, 80);
-        });
+    public void testInvalidQualityValue() {
+        ExecutionContext context = new TestExecutionContext();
 
-        assertEquals(NullPointerException.class, exception.getClass(), "expected NullPointerException");
+        assertThrows(IOException.class, () -> {
+            WebPConverter.convertToWebP(context, imageBytes, "test-image.jpeg", -10);
+        }, "using an invalid quality value should throw an IOException.");
+    }
+
+    private static class TestExecutionContext implements ExecutionContext {
+        private final Logger logger = Logger.getLogger("TestExecutionContext");
+
+        @Override
+        public Logger getLogger() {
+            return logger;
+        }
+
+        @Override
+        public String getInvocationId() {
+            return "test-invocation-id";
+        }
+
+        @Override
+        public String getFunctionName() {
+            return "test-function";
+        }
     }
 }
+
 
