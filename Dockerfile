@@ -1,4 +1,3 @@
-# Usa l'immagine ufficiale di Azure Functions per Java 17
 FROM mcr.microsoft.com/azure-functions/java:4-java17 AS installer-env
 
 RUN apt-get install -y maven
@@ -24,4 +23,3 @@ ENV AzureWebJobsStorage=""
 # Copy the function app content from the installer stage
 COPY --from=installer-env ["/home/site/wwwroot", "/home/site/wwwroot"]
 
-EXPOSE 80
