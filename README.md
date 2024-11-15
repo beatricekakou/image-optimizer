@@ -2,7 +2,7 @@
 
 ### Description
 
-This project implements an **Azure Function** that optimizes images by uploading them to an **Azure Blob Storage**, converting them to **WebP** format using the **Google WebP CLI**, and saving them in another Blob Storage container. The function is triggered whenever a new blob is added to the `image-input` container.
+This project implements an **Azure Function** that uploads images to an **Azure Blob Storage**, converting them to **WebP** format using the **Google WebP CLI**, and saving them in another Blob Storage container. The function is triggered whenever a new blob is added to the `image-input` container.
 
 To integrate the Google WebP CLI into the project, it was containerized along with the application code, ensuring that the CLI tools are available within the execution environment.
 
@@ -13,7 +13,7 @@ To integrate the Google WebP CLI into the project, it was containerized along wi
 
 ### Prerequisites
 
-- **Java Development Kit (JDK)**: Ensure you have JDK 8 or later installed.
+- **Java Development Kit (JDK)**: Ensure you have JDK 17 or later installed.
 - **Azure Functions Core Tools**: For testing and publishing the Azure Function.
 - **Azure Storage Account**: Required for Blob Storage.
 - **Docker**: Needed to build and run the containerized application.
@@ -26,8 +26,7 @@ To integrate the Google WebP CLI into the project, it was containerized along wi
 Download or clone this project to your local computer.
 
 ```bash
-git clone https://github.com/yourusername/image-optimizer-azure-function.git
-cd image-optimizer-azure-function
+git clone https://github.com/beatricekakou/image-optimizer.git
 ```
 
 #### Set Environment Variables
